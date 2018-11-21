@@ -10,7 +10,10 @@
     "eggPlugin",
     "egg-plugin"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "eureka-js-client": "^4.4.2",
+    "opossum": "^1.9.0"
+  },
   "devDependencies": {
     "autod": "^3.0.0",
     "autod-egg": "^1.0.0",
