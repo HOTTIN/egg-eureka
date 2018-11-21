@@ -1,46 +1,55 @@
 {
-  "name": "eureka-plugin",
+  "name": "egg-eureka-plugin",
   "version": "1.0.0",
-  "description": "nodejs + eureka",
-  "private": true,
-  "dependencies": {
-    "egg": "^2.2.1",
-    "egg-scripts": "^2.5.0",
-    "eureka-js-client": "^4.4.2",
-    "opossum": "^1.9.0"
+  "description": "register egg application to eureka",
+  "eggPlugin": {
+    "name": "eureka"
   },
+  "keywords": [
+    "egg",
+    "eggPlugin",
+    "egg-plugin"
+  ],
+  "dependencies": {},
   "devDependencies": {
-    "autod": "^3.0.1",
+    "autod": "^3.0.0",
     "autod-egg": "^1.0.0",
-    "egg-bin": "^4.3.5",
+    "egg": "^2.0.0",
+    "egg-bin": "^4.3.0",
     "egg-ci": "^1.8.0",
-    "egg-mock": "^3.14.0",
+    "egg-mock": "^3.13.0",
     "eslint": "^4.11.0",
-    "eslint-config-egg": "^6.0.0",
+    "eslint-config-egg": "^5.1.0",
     "webstorm-disable-index": "^1.2.0"
   },
   "engines": {
-    "node": ">=8.9.0"
+    "node": ">=8.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --title=egg-server-eureka-plugin",
-    "stop": "egg-scripts stop --title=egg-server-eureka-plugin",
-    "dev": "egg-bin dev",
-    "debug": "egg-bin debug",
-    "test": "npm run lint -- --fix && npm run test-local",
+    "test": "npm run lint -- --fix && egg-bin pkgfiles && npm run test-local",
     "test-local": "egg-bin test",
     "cov": "egg-bin cov",
     "lint": "eslint .",
-    "ci": "npm run lint && npm run cov",
+    "ci": "egg-bin pkgfiles --check && npm run lint && npm run cov",
+    "pkgfiles": "egg-bin pkgfiles",
     "autod": "autod"
   },
+  "files": [
+    "app.js",
+    "agent.js",
+    "config"
+  ],
   "ci": {
-    "version": "8"
+    "version": "8, 9"
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/eggjs/egg-eureka-plugin.git"
   },
+  "bugs": {
+    "url": "https://github.com/eggjs/egg/issues"
+  },
+  "homepage": "https://github.com/eggjs/egg-eureka-plugin#readme",
   "author": "chenx",
   "license": "MIT"
 }

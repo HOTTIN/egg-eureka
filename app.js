@@ -11,7 +11,7 @@ module.exports = app => {
   });
 
   class rqService extends app.Service {
-    async request(url, opts) {
+    async breakerRequest(url, opts) {
       opts = Object.assign({
         timeout: [ '30s', '30s' ],
         dataType: 'json',
