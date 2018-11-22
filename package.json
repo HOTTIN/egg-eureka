@@ -8,7 +8,8 @@
   "keywords": [
     "egg",
     "eggPlugin",
-    "egg-plugin"
+    "egg-plugin",
+    "eureka"
   ],
   "dependencies": {
     "eureka-js-client": "^4.4.2",
@@ -40,6 +41,7 @@
   "files": [
     "app.js",
     "agent.js",
+    "lib",
     "config"
   ],
   "ci": {
