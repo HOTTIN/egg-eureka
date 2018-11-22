@@ -139,18 +139,18 @@ module.exports = app => {
     }
     _getServerUrl() {
       const eurekaUtil = this.ctx.app.eurekaUtil;
-      const kernelInstances = this.ctx.app.apiClient.get(this.appId);
-      if (!Array.isArray(kernelInstances) || kernelInstances.length === 0) {
-        // this.ctx.logger.error('get 0 kernelInstances!!');
-        this.ctx.throw('get 0 kernelInstances!!');
+      const instances = this.ctx.app.apiClient.get(this.appId);
+      if (!Array.isArray(instances) || instances.length === 0) {
+        // this.ctx.logger.error('get 0 instances!!');
+        this.ctx.throw('get 0 instances!!');
       }
-      const ins = eurekaUtil.getOneInstanceFromAll(kernelInstances);
+      const ins = eurekaUtil.getOneInstanceFromAll(instances);
       const serverUrl = eurekaUtil.getServerPath(ins);
 
       return serverUrl;
     }
 
-    async account(userId, accountType) {
+    async account(userId) {
       const url = `${this._getServerUrl()}/account/${userId}`;
       return await this.breakerRequest(url);
     }
