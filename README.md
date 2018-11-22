@@ -44,6 +44,14 @@ exports.eureka = {
 
 ```js
 // {app_root}/config/config.default.js
+// 熔断配置
+exports.circuitBreaker = {
+  timeout: 30000, // If our function takes longer than 30 seconds, trigger a failure
+  errorThresholdPercentage: 50, // When 50% of requests fail, trip the breaker
+  resetTimeout: 30000, // After 30 seconds, try again.
+};
+
+// 多进程增强模式apiclient配置
 exports.apiClient = {
   // 通过egg apiclient 完成对微服务信息的订阅功能
   subMap: {
@@ -56,6 +64,7 @@ exports.apiClient = {
   },
 };
 
+// eureka配置
 exports.eureka = {
   client: {
     // instance信息不是必须的，如果你清楚知道自己将要部署的服务信息，可以自行填写，
@@ -114,7 +123,41 @@ see [config/config.default.js](config/config.default.js) for more detail.
 
 ## Example
 
-<!-- example here -->
+插件在app上封装了breakerRequest方法，通过opossum封装了内置ctx.curl
+使用时需要从app.Service继承
+
+```js
+'use strict';
+
+// const Service = require('egg').Service;
+
+module.exports = app => {
+  class accountService extends app.Service {
+    constructor(ctx) {
+      super(ctx);
+      this.appId = 'foo';
+    }
+    _getServerUrl() {
+      const eurekaUtil = this.ctx.app.eurekaUtil;
+      const kernelInstances = this.ctx.app.apiClient.get(this.appId);
+      if (!Array.isArray(kernelInstances) || kernelInstances.length === 0) {
+        // this.ctx.logger.error('get 0 kernelInstances!!');
+        this.ctx.throw('get 0 kernelInstances!!');
+      }
+      const ins = eurekaUtil.getOneInstanceFromAll(kernelInstances);
+      const serverUrl = eurekaUtil.getServerPath(ins);
+
+      return serverUrl;
+    }
+
+    async account(userId, accountType) {
+      const url = `${this._getServerUrl()}/account/${userId}`;
+      return await this.breakerRequest(url);
+    }
+  }
+  return accountService;
+};
+
 
 ## Questions & Suggestions
 

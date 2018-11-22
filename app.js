@@ -2,16 +2,22 @@
 
 const APIClient = require('./lib/apiClient');
 const circuitBreaker = require('opossum');
+const eurekaUtil = require('./lib/eureka').eurekaUtil;
 
 module.exports = app => {
   const config = app.config.apiClient;
+  const breakerConf = app.config.circuitBreaker;
   app.apiClient = new APIClient(Object.assign({}, config, { cluster: app.cluster }));
+  app.eurekaUtil = eurekaUtil;
   app.beforeStart(async () => {
     await app.apiClient.ready();
   });
 
   class rqService extends app.Service {
-    async breakerRequest(url, opts) {
+    async breakerRequest(url, opts, fallback) {
+      if (arguments.length === 2 && typeof opts === 'function') {
+        [ opts, fallback ] = [ fallback, opts ];
+      }
       opts = Object.assign({
         timeout: [ '30s', '30s' ],
         dataType: 'json',
@@ -20,19 +26,16 @@ module.exports = app => {
       const { ctx } = this;
       const breaker = circuitBreaker(async function() {
         return await ctx.curl(url, opts);
-      }, {
-        timeout: 30000, // If our function takes longer than 30 seconds, trigger a failure
-        errorThresholdPercentage: 50, // When 50% of requests fail, trip the breaker
-        resetTimeout: 30000, // After 30 seconds, try again.
-      });
-      breaker.fallback(err => {
+      }, breakerConf);
+      const defaultFallback = err => {
         ctx.logger.error(`[circuitBreaker]-fallback: ${url} got error`, err);
         return {
           code: '502',
           message: '服务无法访问',
           data: '',
         };
-      });
+      }
+      breaker.fallback(fallback || defaultFallback);
 
       this.logger.info('request external service: %s with params', url, opts && opts.data);
       const t1 = Date.now();

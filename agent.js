@@ -1,4 +1,5 @@
 'use strict';
+
 const eureka = require('./lib/eureka').eureka;
 const APIClient = require('./lib/apiClient');
 
