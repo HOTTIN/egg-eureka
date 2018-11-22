@@ -44,7 +44,69 @@ exports.eureka = {
 
 ```js
 // {app_root}/config/config.default.js
+exports.apiClient = {
+  // 通过egg apiclient 完成对微服务信息的订阅功能
+  subMap: {
+    // 自定义foo，作为在service中获取订阅信息的key值
+    foo: {
+      // bar 是你需要订阅的微服务的vipAddress，一般和app name相同
+      // 填写后agent会在registryUpdated事件触发时更新微服务实例信息，并发布给各个follwer
+      dataId: 'bar',
+    },
+  },
+};
+
 exports.eureka = {
+  client: {
+    // instance信息不是必须的，如果你清楚知道自己将要部署的服务信息，可以自行填写，
+    // 如果是部署在docker中，需要自行填写，
+    // 否则，应用会读取服务器信息以及egg应用的启动信息自动填写配置
+    instance: {
+      instanceId: '127.0.0.1:node-rest:7001',
+      app: 'node-rest',
+      hostName: '127.0.0.1',
+      ipAddr: '127.0.0.1',
+      // preferIpAddress: true, // default is false and host will be used.
+      // homePageUrl: 'http://127.0.0.1:7001/info',
+      statusPageUrl: 'http://127.0.0.1:7001/info',
+      // healthCheckUrl: 'http://127.0.0.1:7001/info',
+      port: {
+        $: 7001,
+        '@enabled': 'true',
+      },
+      // Important, otherwise spring-apigateway cannot find instance of node-rest
+      vipAddress: 'node-rest',
+      // secureVipAddress: 'node-rest',
+      dataCenterInfo: {
+        '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+        name: 'MyOwn',
+      },
+    },
+    // requestMiddleware: (requestOpts, done) => {
+    //   requestOpts.auth = {
+    //     user: 'admin',
+    //     password: '123456',
+    //   };
+    //   done(requestOpts);
+    // },
+    eureka: {
+      fetchRegistry: true,
+      // host: '127.0.0.1',
+      // port: 3000,
+      // servicePath: '/eureka/apps/',
+      serviceUrls: {
+        default: [
+          'http://127.0.0.1:3000/eureka/apps/',
+          'http://127.0.0.2:3000/eureka/apps/',
+        ],
+      },
+      ssl: false,
+      useDns: false,
+      fetchMetadata: false,
+      preferIpAddress: true,
+      // maxRetries: 0,
+    },
+  },
 };
 ```
 
