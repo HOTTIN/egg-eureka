@@ -47,12 +47,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eggjs/egg-eureka-plugin.git"
+    "url": "git+https://github.com/HOTTIN/egg-eureka.git"
   },
   "bugs": {
-    "url": "https://github.com/eggjs/egg/issues"
+    "url": "https://github.com/HOTTIN/egg-eureka/issues"
   },
-  "homepage": "https://github.com/eggjs/egg-eureka-plugin#readme",
+  "homepage": "https://github.com/HOTTIN/egg-eureka#readme",
   "author": "chenx",
   "license": "MIT"
 }
