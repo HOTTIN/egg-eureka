@@ -11,40 +11,44 @@ module.exports = app => {
   app.eurekaUtil = eurekaUtil;
   app.beforeStart(async () => {
     await app.apiClient.ready();
+
+    // 在app上挂载单例circuitBreaker，
+    const breakerConfig = app.config.circuitBreaker;
+    app.circuitBreaker = circuitBreaker(async (url, opts) => {
+      return await app.curl(url, opts);
+    }, breakerConfig);
   });
 
   class rqService extends app.Service {
-    async breakerRequest(url, opts, fallback) {
-      if (arguments.length === 2 && typeof opts === 'function') {
-        [ opts, fallback ] = [ fallback, opts ];
-      }
-      opts = Object.assign({
-        timeout: [ '30s', '30s' ],
-        dataType: 'json',
-      }, opts);
-
-      const { ctx } = this;
-      const breaker = circuitBreaker(async function() {
-        return await ctx.curl(url, opts);
-      }, breakerConf);
-      const defaultFallback = err => {
-        ctx.logger.error(`[circuitBreaker]-fallback: ${url} got error`, err);
+    async request(url, opts) {
+      opts = Object.assign(
+        {
+          timeout: [ '30s', '30s' ],
+          dataType: 'json',
+        },
+        opts
+      );
+      app.circuitBreaker.fallback(err => {
+        this.logger.error(`[circuitBreaker]-fallback: ${url} got error`, err);
         return {
           code: '502',
           message: '服务无法访问',
           data: '',
         };
-      }
-      breaker.fallback(fallback || defaultFallback);
+      });
 
-      this.logger.info('request external service: %s with params', url, opts && opts.data);
+      this.logger.info(
+        '[circuitBreaker]-request external service: %s with params',
+        url,
+        opts && opts.data
+      );
       const t1 = Date.now();
-      return await breaker.fire()
-        .then(r => {
-          const cost = Date.now() - t1;
-          this.logger.debug('[%sms]response from [%s]: %j', cost, url, r);
-          return r && r.data;
-        });
+      const result = await app.circuitBreaker.fire(url, opts).then(r => {
+        const cost = Date.now() - t1;
+        this.logger.info('[circuitBreaker]-[%sms]response from [%s]: %j', cost, url, r);
+        return r && r.data;
+      });
+      return result;
     }
   }
 
